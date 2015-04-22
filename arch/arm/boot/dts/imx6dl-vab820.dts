@@ -1,0 +1,37 @@
+/*
+ * Copyright 2012 Freescale Semiconductor, Inc.
+ * Copyright 2011 Linaro Ltd.
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+/dts-v1/;
+#include "imx6dl.dtsi"
+#include "imx6qdl-vab820.dtsi"
+
+/ {
+	model = "VIA i.MX6 Dual-lite VAB-820 Board";
+	compatible = "via,imx6dl-vab820", "fsl,imx6dl";
+};
+
+&mxcfb1 {
+	status = "okay";
+};
+
+&mxcfb2 {
+	status = "okay";
+};
+
+&mxcfb3 {
+	status = "okay";
+};
+
+&mxcfb4 {
+	status = "okay";
+};
+

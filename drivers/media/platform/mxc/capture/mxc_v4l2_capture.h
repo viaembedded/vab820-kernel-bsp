@@ -40,7 +40,7 @@
 #include <media/v4l2-int-device.h>
 
 
-#define FRAME_NUM 10
+#define FRAME_NUM 30
 #define MXC_SENSOR_NUM 2
 
 enum imx_v4l2_devtype {

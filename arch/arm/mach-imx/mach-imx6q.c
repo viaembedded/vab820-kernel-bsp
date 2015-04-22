@@ -56,19 +56,19 @@ static void mx6q_flexcan_switch(void)
 		 * after board power up. So we set the EN/STBY initial state to low
 		 * first then to high to guarantee the state transition successfully.
 		 */
-		gpio_set_value_cansleep(flexcan_en_gpio, 0);
-		gpio_set_value_cansleep(flexcan_stby_gpio, 0);
+		//gpio_set_value_cansleep(flexcan_en_gpio, 0);
+		//gpio_set_value_cansleep(flexcan_stby_gpio, 0);
 
-		gpio_set_value_cansleep(flexcan_en_gpio, 1);
-		gpio_set_value_cansleep(flexcan_stby_gpio, 1);
+		//gpio_set_value_cansleep(flexcan_en_gpio, 1);
+		//gpio_set_value_cansleep(flexcan_stby_gpio, 1);
 	} else {
 		/*
 		 * avoid to disable CAN xcvr if any of the CAN interfaces
 		 * are down. XCRV will be disabled only if both CAN2
 		 * interfaces are DOWN.
 		*/
-		gpio_set_value_cansleep(flexcan_en_gpio, 0);
-		gpio_set_value_cansleep(flexcan_stby_gpio, 0);
+		//gpio_set_value_cansleep(flexcan_en_gpio, 0);
+		//gpio_set_value_cansleep(flexcan_stby_gpio, 0);
 	}
 }
 
@@ -220,10 +220,12 @@ static void __init imx6q_csi_mux_init(void)
 	gpr = syscon_regmap_lookup_by_compatible("fsl,imx6q-iomuxc-gpr");
 	if (!IS_ERR(gpr)) {
 		if (of_machine_is_compatible("fsl,imx6q-sabresd") ||
-			of_machine_is_compatible("fsl,imx6q-sabreauto"))
+			of_machine_is_compatible("fsl,imx6q-sabreauto") ||
+			of_machine_is_compatible("via,imx6q-vab820")) // (Sylvia) add imx6q-vab820
 			regmap_update_bits(gpr, IOMUXC_GPR1, 1 << 19, 1 << 19);
 		else if (of_machine_is_compatible("fsl,imx6dl-sabresd") ||
-			 of_machine_is_compatible("fsl,imx6dl-sabreauto"))
+			 of_machine_is_compatible("fsl,imx6dl-sabreauto") ||
+			 of_machine_is_compatible("via,imx6dl-vab820")) // (Sylvia) add imx6dl-vab820
 			regmap_update_bits(gpr, IOMUXC_GPR13, 0x3F, 0x0C);
 	} else {
 		pr_err("%s(): failed to find fsl,imx6q-iomux-gpr regmap\n",
@@ -304,6 +306,35 @@ static const struct of_dev_auxdata imx6q_auxdata_lookup[] __initconst = {
 	{ /* sentinel */ }
 };
 
+/* (Sylvia) add turnoff led and hdmi when power off */
+static void turnoff_power_led(void)
+{
+	int power_led_gpio;
+	struct device_node *np;
+
+	np = of_find_node_by_path("/leds/power");
+	power_led_gpio = of_get_named_gpio(np, "power-led-gpio", 0);
+
+	gpio_request(power_led_gpio, "power-led");
+	gpio_direction_output(power_led_gpio, 0);
+}
+
+static void turnoff_hdmi(void)
+{
+	void __iomem *mx6_pwr_off = MX6Q_IO_ADDRESS(0x20c8130);
+	u32 value;
+	value = readl(mx6_pwr_off);
+	writel(value & 0xfffffffe , mx6_pwr_off);
+
+}
+
+static void mx6_poweroff(void)
+{
+	turnoff_power_led();
+	turnoff_hdmi();
+}
+
+
 static void __init imx6q_init_machine(void)
 {
 	struct device *parent;
@@ -320,6 +351,9 @@ static void __init imx6q_init_machine(void)
 	imx_anatop_init();
 	imx6_pm_init();
 	imx6q_csi_mux_init();
+
+	// (Sylvia)
+	pm_power_off = mx6_poweroff;
 }
 
 #define OCOTP_CFG3			0x440

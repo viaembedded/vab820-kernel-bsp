@@ -925,7 +925,6 @@ static u8 hdmi_edid_i2c_read(struct mxc_hdmi *hdmi,
 	u8 spointer = blockno / 2;
 	u8 edidaddress = ((blockno % 2) * 0x80) + addr;
 	u8 data;
-
 	hdmi_writeb(0xFF, HDMI_IH_I2CM_STAT0);
 	hdmi_writeb(edidaddress, HDMI_I2CM_ADDRESS);
 	hdmi_writeb(spointer, HDMI_I2CM_SEGADDR);
@@ -1756,7 +1755,6 @@ static void hdmi_disable_overflow_interrupts(void)
 static void mxc_hdmi_notify_fb(struct mxc_hdmi *hdmi)
 {
 	dev_dbg(&hdmi->pdev->dev, "%s\n", __func__);
-
 	/* Don't notify if we aren't registered yet */
 	WARN_ON(!hdmi->fb_reg);
 
@@ -1769,6 +1767,7 @@ static void mxc_hdmi_notify_fb(struct mxc_hdmi *hdmi)
 	 * So by the end of this function, mxc_hdmi_setup()
 	 * will be done.
 	 */
+
 	hdmi->fbi->var.activate |= FB_ACTIVATE_FORCE;
 	console_lock();
 	hdmi->fbi->flags |= FBINFO_MISC_USEREVENT;
@@ -1816,6 +1815,7 @@ static void mxc_hdmi_edid_rebuild_modelist(struct mxc_hdmi *hdmi)
 	}
 
 	console_unlock();
+
 }
 
 static void  mxc_hdmi_default_edid_cfg(struct mxc_hdmi *hdmi)
@@ -1847,6 +1847,7 @@ static void  mxc_hdmi_default_modelist(struct mxc_hdmi *hdmi)
 	}
 
 	console_unlock();
+
 }
 
 static void mxc_hdmi_set_mode_to_vga_dvi(struct mxc_hdmi *hdmi)

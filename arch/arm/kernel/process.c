@@ -210,7 +210,12 @@ void machine_halt(void)
 	smp_send_stop();
 
 	local_irq_disable();
-	while (1);
+
+	// (Sylvia)
+	//while (1);
+	if (pm_power_off)
+		pm_power_off();
+
 }
 
 /*

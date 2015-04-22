@@ -150,6 +150,9 @@
 
 #define FLEXCAN_MB_CODE_MASK		(0xf0ffffff)
 
+/*Chris add Steven's content - workaround: if disable FLEXCAN echo, unmark next line*/
+//#define VAB820_DISABLE_FLEXCAN_ECHO
+
 /*
  * FLEXCAN hardware feature flags
  *
@@ -349,6 +352,10 @@ static int flexcan_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	const struct flexcan_priv *priv = netdev_priv(dev);
 	struct flexcan_regs __iomem *regs = priv->base;
 	struct can_frame *cf = (struct can_frame *)skb->data;
+	#ifdef VAB820_DISABLE_FLEXCAN_ECHO
+		//Chris add the Ken modified content
+		struct net_device_stats *stats = &dev->stats;
+	#endif
 	u32 can_id;
 	u32 ctrl = FLEXCAN_MB_CNT_CODE(0xc) | (cf->can_dlc << 16);
 
@@ -375,8 +382,10 @@ static int flexcan_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		u32 data = be32_to_cpup((__be32 *)&cf->data[4]);
 		flexcan_write(data, &regs->cantxfg[FLEXCAN_TX_BUF_ID].data[1]);
 	}
-
-	can_put_echo_skb(skb, dev, 0);
+	#ifndef VAB820_DISABLE_FLEXCAN_ECHO
+		//Chris add Ken's modified content
+		can_put_echo_skb(skb, dev, 0);
+	#endif
 
 	flexcan_write(can_id, &regs->cantxfg[FLEXCAN_TX_BUF_ID].can_id);
 	flexcan_write(ctrl, &regs->cantxfg[FLEXCAN_TX_BUF_ID].can_ctrl);
@@ -385,6 +394,11 @@ static int flexcan_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		writel(0x0, &regs->cantxfg[FLEXCAN_RESERVED_BUF_ID].can_ctrl);
 		writel(0x0, &regs->cantxfg[FLEXCAN_RESERVED_BUF_ID].can_ctrl);
 	}
+	#ifdef VAB820_DISABLE_FLEXCAN_ECHO
+		/*Chris add Ken's content - tx packet count*/
+		stats->tx_bytes += cf->can_dlc;
+		stats->tx_packets++;
+	#endif
 
 	return NETDEV_TX_OK;
 }
@@ -651,7 +665,11 @@ static int flexcan_poll(struct napi_struct *napi, int quota)
 static irqreturn_t flexcan_irq(int irq, void *dev_id)
 {
 	struct net_device *dev = dev_id;
-	struct net_device_stats *stats = &dev->stats;
+	#ifndef VAB820_DISABLE_FLEXCAN_ECHO
+		//Chris add Ken's modified content
+		/*Steven: use VAB820_DISABLE_FLEXCAN_ECHO to disable it*/
+		struct net_device_stats *stats = &dev->stats;
+	#endif
 	struct flexcan_priv *priv = netdev_priv(dev);
 	struct flexcan_regs __iomem *regs = priv->base;
 	u32 reg_iflag1, reg_esr;
@@ -695,8 +713,12 @@ static irqreturn_t flexcan_irq(int irq, void *dev_id)
 
 	/* transmission complete interrupt */
 	if (reg_iflag1 & (1 << FLEXCAN_TX_BUF_ID)) {
-		stats->tx_bytes += can_get_echo_skb(dev, 0);
-		stats->tx_packets++;
+		#ifndef VAB820_DISABLE_FLEXCAN_ECHO
+			/*Chris add Ken's modified content - The disable can_get_echo_skb
+		and stats->tx* counters in flexcan_start_xmit() */
+			stats->tx_bytes += can_get_echo_skb(dev, 0);
+			stats->tx_packets++;
+		#endif
 		can_led_event(dev, CAN_LED_EVENT_TX);
 		flexcan_write((1 << FLEXCAN_TX_BUF_ID), &regs->iflag1);
 		netif_wake_queue(dev);
