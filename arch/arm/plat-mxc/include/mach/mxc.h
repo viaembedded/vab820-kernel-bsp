@@ -44,6 +44,11 @@
 #define IMX_CHIP_REVISION_1_1		0x11
 #define IMX_CHIP_REVISION_1_2		0x12
 #define IMX_CHIP_REVISION_1_3		0x13
+
+// (Sylvia) updated from ENGR00286181 ARM: i.MX6: add more chip revision support
+#define IMX_CHIP_REVISION_1_4		0x14
+#define IMX_CHIP_REVISION_1_5 		0x15
+
 #define IMX_CHIP_REVISION_2_0		0x20
 #define IMX_CHIP_REVISION_2_1		0x21
 #define IMX_CHIP_REVISION_2_2		0x22

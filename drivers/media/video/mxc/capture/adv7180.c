@@ -41,6 +41,7 @@ static struct fsl_mxc_tvin_platform_data *tvin_plat;
 extern void gpio_sensor_active(void);
 extern void gpio_sensor_inactive(void);
 
+static void adv7180_hard_reset(bool cvbs);
 static int adv7180_probe(struct i2c_client *adapter,
 			 const struct i2c_device_id *id);
 static int adv7180_detach(struct i2c_client *client);
@@ -187,8 +188,10 @@ static inline int adv7180_read(u8 reg)
 	int val;
 	val = i2c_smbus_read_byte_data(adv7180_data.sen.i2c_client, reg);
 	if (val < 0) {
-		dev_dbg(&adv7180_data.sen.i2c_client->dev,
-			"%s:read reg error: reg=%2x\n", __func__, reg);
+		/* dev_dbg(&adv7180_data.sen.i2c_client->dev,
+			"%s:read reg error: reg=%2x\n", __func__, reg); */
+		dev_err(&adv7180_data.sen.i2c_client->dev,
+			"%s:read reg error: reg=%2x, return val=%d\n", __func__, reg, val);
 		return -1;
 	}
 	return val;
@@ -401,6 +404,28 @@ static int ioctl_s_parm(struct v4l2_int_device *s, struct v4l2_streamparm *a)
 	switch (a->type) {
 	/* These are all the possible cases. */
 	case V4L2_BUF_TYPE_VIDEO_CAPTURE:
+          // Added By Dylan
+          //Just take advantage of this standard ioctl func as s_input ioctl
+          //Select input from CVBS or S-Video
+          switch (a->parm.raw_data[0]) {
+                case 1:
+                        /* CVBS input on ANT3 */
+                        //insel = true;
+	                //adv7180_hard_reset(insel);
+                        adv7180_write_reg(ADV7180_INPUT_CTL, 0x04);
+                        pr_err ("ADV7180: Set input to CVBS\n");
+                        break;
+                case 2:
+                       /* S-Video input, Y on ANT1, C on ANT2 */
+                       //insel = false;
+	               //adv7180_hard_reset(insel);
+                       adv7180_write_reg(ADV7180_INPUT_CTL, 0x06);
+                       pr_err ("ADV7180: Set input to S-Video\n");
+                        break;
+                default:
+                        pr_err("ADV7180: Unkown input select, set nothing\n"); 
+                        break;
+          }
 	case V4L2_BUF_TYPE_VIDEO_OUTPUT:
 	case V4L2_BUF_TYPE_VIDEO_OVERLAY:
 	case V4L2_BUF_TYPE_VBI_CAPTURE:
@@ -808,13 +833,21 @@ static void adv7180_hard_reset(bool cvbs)
 
 	if (cvbs) {
 		/* Set CVBS input on AIN1 */
-		adv7180_write_reg(ADV7180_INPUT_CTL, 0x00);
+		//adv7180_write_reg(ADV7180_INPUT_CTL, 0x00);
+
+		/* (Sylvia) added : Set CVBS input on AIN3 */
+		adv7180_write_reg(ADV7180_INPUT_CTL, 0x04);
+		adv7180_write_reg(0x27, 0x58);
 	} else {
 		/*
 		 * Set YPbPr input on AIN1,4,5 and normal
 		 * operations(autodection of all stds).
 		 */
-		adv7180_write_reg(ADV7180_INPUT_CTL, 0x09);
+		//adv7180_write_reg(ADV7180_INPUT_CTL, 0x09);
+
+		/* (Sylvia) added : Set Y/C input on AIN1,2 and normal */
+		adv7180_write_reg(ADV7180_INPUT_CTL, 0x06);
+		adv7180_write_reg(0x27, 0x69);
 	}
 
 	/* Datasheet recommends */
@@ -852,7 +885,7 @@ static void adv7180_hard_reset(bool cvbs)
 	adv7180_write_reg(0x24, 0x00);
 	adv7180_write_reg(0x25, 0x00);
 	adv7180_write_reg(0x26, 0x00);
-	adv7180_write_reg(0x27, 0x58);
+	//adv7180_write_reg(0x27, 0x58); // (Sylvia) marked
 	adv7180_write_reg(0x28, 0x00);
 	adv7180_write_reg(0x29, 0x00);
 	adv7180_write_reg(0x2A, 0x00);
@@ -1081,7 +1114,7 @@ static int adv7180_probe(struct i2c_client *client,
 	int ret = 0;
 	tvin_plat = client->dev.platform_data;
 
-	printk(KERN_ERR"DBG sensor data is at %p\n", &adv7180_data);
+	printk(KERN_ERR"DBG adv7180 sensor data is at %p\n", &adv7180_data);
 
 	pr_debug("In adv7180_probe\n");
 

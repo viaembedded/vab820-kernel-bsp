@@ -240,7 +240,10 @@ void machine_shutdown(void)
 void machine_halt(void)
 {
 	machine_shutdown();
-	while (1);
+	//while (1);
+	//Peter edit for power off
+	if (pm_power_off)
+		pm_power_off();
 }
 
 void machine_power_off(void)

@@ -48,7 +48,7 @@ static int video_nr = -1;
 
 /*! This data is used for the output to the display. */
 #define MXC_V4L2_CAPTURE_NUM_OUTPUTS	6
-#define MXC_V4L2_CAPTURE_NUM_INPUTS	2
+#define MXC_V4L2_CAPTURE_NUM_INPUTS	 3
 static struct v4l2_output mxc_capture_outputs[MXC_V4L2_CAPTURE_NUM_OUTPUTS] = {
 	{
 	 .index = 0,
@@ -112,7 +112,16 @@ static struct v4l2_input mxc_capture_inputs[MXC_V4L2_CAPTURE_NUM_INPUTS] = {
 	 },
 	{
 	 .index = 1,
-	 .name = "CSI MEM",
+	 .name = "CVBS",//changed by Dylan, default "CSI MEM"
+	 .type = V4L2_INPUT_TYPE_CAMERA,
+	 .audioset = 0,
+	 .tuner = 0,
+	 .std = V4L2_STD_UNKNOWN,
+	 .status = V4L2_IN_ST_NO_POWER,
+	 },
+	{ //Added by Dylan, add S-Video input
+	 .index = 2,
+	 .name = "S-VIDEO",
 	 .type = V4L2_INPUT_TYPE_CAMERA,
 	 .audioset = 0,
 	 .tuner = 0,
@@ -805,11 +814,19 @@ static int mxc_v4l2_s_fmt(cam_data *cam, struct v4l2_format *f)
 		 * Force the capture window resolution to be crop bounds
 		 * for CSI MEM input mode.
 		 */
-		if (strcmp(mxc_capture_inputs[cam->current_input].name,
+		 
+		/* if (strcmp(mxc_capture_inputs[cam->current_input].name,
 			   "CSI MEM") == 0) {
 			f->fmt.pix.width = cam->crop_current.width;
 			f->fmt.pix.height = cam->crop_current.height;
+		} */
+
+		if (strcmp(mxc_capture_inputs[cam->current_input].name,"CVBS") == 0  ||  
+                    strcmp(mxc_capture_inputs[cam->current_input].name,"S-VIDEO") == 0 ) {
+			f->fmt.pix.width = cam->crop_current.width;
+			f->fmt.pix.height = cam->crop_current.height;
 		}
+    pr_err("In MVX: current input index is %d, current height is %d\n",cam->current_input,cam->crop_current.width);
 
 		if (cam->rotation >= IPU_ROTATE_90_RIGHT) {
 			height = &f->fmt.pix.width;
@@ -1579,7 +1596,12 @@ static int mxc_v4l_open(struct file *file)
 					 cam->low_power == false);
 
 		if (strcmp(mxc_capture_inputs[cam->current_input].name,
-			   "CSI MEM") == 0) {
+			   "CVBS") == 0) {
+#if defined(CONFIG_MXC_IPU_CSI_ENC) || defined(CONFIG_MXC_IPU_CSI_ENC_MODULE)
+			err = csi_enc_select(cam);
+#endif
+		} else if (strcmp(mxc_capture_inputs[cam->current_input].name,
+			   "S-VIDEO") == 0) {
 #if defined(CONFIG_MXC_IPU_CSI_ENC) || defined(CONFIG_MXC_IPU_CSI_ENC_MODULE)
 			err = csi_enc_select(cam);
 #endif
@@ -1737,7 +1759,12 @@ static int mxc_v4l_close(struct file *file)
 		pr_debug("mxc_v4l_close: release resource\n");
 
 		if (strcmp(mxc_capture_inputs[cam->current_input].name,
-			   "CSI MEM") == 0) {
+			   "CVBS") == 0) {
+#if defined(CONFIG_MXC_IPU_CSI_ENC) || defined(CONFIG_MXC_IPU_CSI_ENC_MODULE)
+			err |= csi_enc_deselect(cam);
+#endif
+		} else if (strcmp(mxc_capture_inputs[cam->current_input].name,
+			   "S-VIDEO") == 0) {
 #if defined(CONFIG_MXC_IPU_CSI_ENC) || defined(CONFIG_MXC_IPU_CSI_ENC_MODULE)
 			err |= csi_enc_deselect(cam);
 #endif
@@ -1869,6 +1896,7 @@ static long mxc_v4l_do_ioctl(struct file *file,
 			    unsigned int ioctlnr, void *arg)
 {
 	struct video_device *dev = video_devdata(file);
+	struct v4l2_streamparm inparm;
 	cam_data *cam = video_get_drvdata(dev);
 	int retval = 0;
 	unsigned long lock_flags;
@@ -2213,7 +2241,12 @@ static long mxc_v4l_do_ioctl(struct file *file,
 	case VIDIOC_ENUMSTD: {
 		struct v4l2_standard *e = arg;
 		pr_debug("   case VIDIOC_ENUMSTD\n");
-		*e = cam->standard;
+
+		// (Sylvia) add index check to prevent gstreamer-properties tool from infinite loops.
+		if (e->index > 0) 
+			retval = -EINVAL;
+		else
+			*e = cam->standard;
 		break;
 	}
 
@@ -2304,8 +2337,22 @@ static long mxc_v4l_do_ioctl(struct file *file,
 							V4L2_IN_ST_NO_POWER;
 		}
 
-		if (strcmp(mxc_capture_inputs[*index].name, "CSI MEM") == 0) {
+		if (strcmp(mxc_capture_inputs[*index].name, "CVBS") == 0) {
 #if defined(CONFIG_MXC_IPU_CSI_ENC) || defined(CONFIG_MXC_IPU_CSI_ENC_MODULE)
+                        pr_err ("MXC V4L2 Capture: Choose capture input CVBS\n");
+                        inparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                        inparm.parm.raw_data[0] = 1; //input select flag of adv7180
+	                vidioc_int_s_parm(cam->sensor, &inparm);
+			retval = csi_enc_select(cam);
+			if (retval)
+				break;
+#endif
+		} else if (strcmp(mxc_capture_inputs[*index].name,"S-VIDEO") == 0){
+#if defined(CONFIG_MXC_IPU_CSI_ENC) || defined(CONFIG_MXC_IPU_CSI_ENC_MODULE)
+                        pr_err ("MXC V4L2 Capture: Choose capture input S-Video\n");
+                        inparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                        inparm.parm.raw_data[0] = 2; //input select flag of adv7180
+	                vidioc_int_s_parm(cam->sensor, &inparm);
 			retval = csi_enc_select(cam);
 			if (retval)
 				break;

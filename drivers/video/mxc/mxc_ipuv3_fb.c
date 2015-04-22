@@ -47,9 +47,11 @@
 #include <linux/uaccess.h>
 #include <linux/fsl_devices.h>
 #include <asm/mach-types.h>
+#include <linux/delay.h>
 #include <mach/ipu-v3.h>
 #include "mxc_dispdrv.h"
 
+extern u32 s_vab820_ram_size;
 /*
  * Driver name
  */
@@ -132,7 +134,7 @@ enum {
 	BOTH_OFF
 };
 
-static bool g_dp_in_use[2];
+bool g_dp_in_use[2];
 LIST_HEAD(fb_alloc_list);
 
 /* Return default standard(RGB) pixel format */
@@ -340,7 +342,7 @@ static int _setup_disp_channel2(struct fb_info *fbi)
 		fr_yoff = fbi->var.yoffset;
 		fr_h = fbi->var.yres_virtual;
 	}
-	base += fr_yoff * fb_stride + fr_xoff;
+	base += fr_yoff * fb_stride + fr_xoff * fbi->var.bits_per_pixel/8;
 
 	mxc_fbi->cur_ipu_buf = 2;
 	init_completion(&mxc_fbi->flip_complete);
@@ -856,11 +858,22 @@ static int mxcfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 	if (var->rotate > IPU_ROTATE_VERT_FLIP)
 		var->rotate = IPU_ROTATE_NONE;
 
-	if (var->xres_virtual < var->xres)
-		var->xres_virtual = var->xres;
-
-	if (var->yres_virtual < var->yres)
-		var->yres_virtual = var->yres * 3;
+	if(s_vab820_ram_size != SZ_1G) {
+		if (mxc_fbi->ipu_ch == MEM_BG_SYNC) {
+			var->xres_virtual = 4000;
+			var->yres_virtual = 4000;
+		}else{
+			if (var->xres_virtual < var->xres)
+				var->xres_virtual = var->xres;
+			if (var->yres_virtual < var->yres)
+				var->yres_virtual = var->yres * 3;
+		}
+	} else {
+		if (var->xres_virtual < var->xres)
+			var->xres_virtual = var->xres;
+		if (var->yres_virtual < var->yres)
+			var->yres_virtual = var->yres * 3;
+	}
 
 	if ((var->bits_per_pixel != 32) && (var->bits_per_pixel != 24) &&
 	    (var->bits_per_pixel != 16) && (var->bits_per_pixel != 12) &&
@@ -1449,7 +1462,7 @@ mxcfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
 		fr_yoff = var->yoffset;
 		fr_h = info->var.yres_virtual;
 	}
-	base += fr_yoff * fb_stride + fr_xoff;
+	base += fr_yoff * fb_stride + fr_xoff * var->bits_per_pixel / 8;
 
 	/* Check if DP local alpha is enabled and find the graphic fb */
 	if (mxc_fbi->ipu_ch == MEM_BG_SYNC || mxc_fbi->ipu_ch == MEM_FG_SYNC) {
@@ -1910,6 +1923,7 @@ static int mxcfb_dispdrv_init(struct platform_device *pdev,
 		/* setting */
 		mxcfbi->ipu_id = setting.dev_id;
 		mxcfbi->ipu_di = setting.disp_id;
+
 	}
 
 	return ret;
@@ -1935,7 +1949,7 @@ static int mxcfb_option_setup(struct platform_device *pdev, struct fb_info *fbi)
 	}
 
 	if (!options || !*options)
-		return 0;
+		return -ENODEV;
 
 	while ((opt = strsep(&options, ",")) != NULL) {
 		if (!*opt)
@@ -2254,8 +2268,11 @@ static int mxcfb_probe(struct platform_device *pdev)
 	}
 
 	ret = mxcfb_option_setup(pdev, fbi);
-	if (ret)
+	if (ret < 0){
+		fb_dealloc_cmap(&fbi->cmap);
+		framebuffer_release(fbi);
 		goto get_fb_option_failed;
+	}
 
 	mxcfbi = (struct mxcfb_info *)fbi->par;
 	mxcfbi->ipu_int_clk = plat_data->int_clk;
@@ -2277,9 +2294,22 @@ static int mxcfb_probe(struct platform_device *pdev)
 		fbi->fix.smem_len = res->end - res->start + 1;
 		fbi->fix.smem_start = res->start;
 		fbi->screen_base = ioremap(fbi->fix.smem_start, fbi->fix.smem_len);
+		printk("the vir address of fb is:%x,the phy address of fb is:%x,\
+		the size of fb is:%dM\n",fbi->screen_base,fbi->fix.smem_start,	\
+		fbi->fix.smem_len);
 		/* Do not clear the fb content drawn in bootloader. */
 		if (!mxcfbi->late_init)
 			memset(fbi->screen_base, 0, fbi->fix.smem_len);
+	} else { 
+		if(s_vab820_ram_size != SZ_1G) {
+				if(num_registered_fb == 2) {
+				fbi->fix.smem_len = registered_fb[0]->fix.smem_len;
+				fbi->fix.smem_start = registered_fb[0]->fix.smem_start;
+				fbi->screen_base = registered_fb[0]->screen_base;
+				fbi->screen_size = registered_fb[0]->screen_size;
+
+			}
+		}
 	}
 
 	mxcfbi->ipu = ipu_get_soc(mxcfbi->ipu_id);
@@ -2356,6 +2386,11 @@ static int mxcfb_probe(struct platform_device *pdev)
 				    " device propety\n", ret);
 
 #ifdef CONFIG_LOGO
+	/*
+	 * We need to wait HDMI to be inited well, otherwise the boot logo will not be shown.
+	 */
+	if (!strncmp(plat_data->disp_dev, "hdmi", 4))
+		msleep(500); 
 	fb_prepare_logo(fbi, 0);
 	fb_show_logo(fbi, 0);
 #endif

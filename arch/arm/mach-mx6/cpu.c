@@ -67,6 +67,14 @@ static int mx6_get_srev(void)
 	else if (rev == 2)
 		return IMX_CHIP_REVISION_1_2;
 
+	// (Sylvia) updated from ENGR00286181 ARM: i.MX6: add more chip revision support
+	else if (rev == 3)
+		return IMX_CHIP_REVISION_1_3;
+	else if (rev == 4)
+		return IMX_CHIP_REVISION_1_4;
+	else if (rev == 5)
+		return IMX_CHIP_REVISION_1_5;
+
 	return IMX_CHIP_REVISION_UNKNOWN;
 }
 

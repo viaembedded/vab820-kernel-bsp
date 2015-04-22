@@ -1521,6 +1521,10 @@ static const struct hid_device_id hid_have_special_driver[] = {
 	{ HID_USB_DEVICE(USB_VENDOR_ID_ZYDACRON, USB_DEVICE_ID_ZYDACRON_REMOTE_CONTROL) },
 
 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_MS_PRESENTER_8K_BT) },
+
+	// (Sylvia) added
+	{ HID_USB_DEVICE(0x10c4, 0x88cd) }, // IPCT 
+
 	{ }
 };
 

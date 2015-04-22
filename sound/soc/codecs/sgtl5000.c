@@ -600,9 +600,9 @@ static const struct snd_kcontrol_new sgtl5000_snd_controls[] = {
 			headphone_volume),
 	SOC_SINGLE("Headphone Playback ZC Switch", SGTL5000_CHIP_ANA_CTRL,
 			5, 1, 0),
-
+	// steven: 2bit=0~3, 4-->3
 	SOC_SINGLE_TLV("Mic Volume", SGTL5000_CHIP_MIC_CTRL,
-			0, 4, 0, mic_gain_tlv),
+			0, 3, 0, mic_gain_tlv),
 
 	/* Bass Enhance enable */
 	SOC_SINGLE("Bass Enable", SGTL5000_DAP_BASS_ENHANCE,

@@ -38,6 +38,11 @@
 		PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |		\
 		PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
+//Peter added for VAB-820 DTE mode
+#define MX6DL_UART_RTSDTR_PAD_CTRL (PAD_CTL_PKE | PAD_CTL_PUE  |		\
+		PAD_CTL_PUS_100K_DOWN | PAD_CTL_SPEED_MED |		\
+		PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
+
 #define MX6DL_USDHC_PAD_CTRL (PAD_CTL_PKE | PAD_CTL_PUE |		\
 		PAD_CTL_PUS_22K_UP  | PAD_CTL_SPEED_LOW |		\
 		PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -1651,8 +1656,9 @@
 		IOMUX_PAD(0x0534, 0x0164, 5, 0x0000, 0, NO_PAD_CTRL)
 #define MX6DL_PAD_EIM_D24__AUDMUX_AUD5_RXFS                                    \
 		IOMUX_PAD(0x0534, 0x0164, 6, 0x07BC, 1, NO_PAD_CTRL)
+// (Peter) modify for voltage issue
 #define MX6DL_PAD_EIM_D24__UART1_DTR                                           \
-		IOMUX_PAD(0x0534, 0x0164, 7, 0x0000, 0, MX6DL_UART_PAD_CTRL)
+		IOMUX_PAD(0x0534, 0x0164, 7, 0x0000, 0, MX6DL_UART_RTSDTR_PAD_CTRL)
 #define MX6DL_PAD_EIM_D24__EPDC_SDCE_7                                         \
 		IOMUX_PAD(0x0534, 0x0164, 8, 0x0000, 0, NO_PAD_CTRL)
 
@@ -3452,7 +3458,7 @@
 #define MX6DL_PAD_SD3_DAT0__UART1_CTS                                          \
 		IOMUX_PAD(0x06FC, 0x0314, 1, 0x0000, 0, MX6DL_UART_PAD_CTRL)
 #define MX6DL_PAD_SD3_DAT0__UART1_RTS                                         \
-		IOMUX_PAD(0x06FC, 0x0314, 1, 0x08F8, 2, MX6DL_UART_PAD_CTRL)
+		IOMUX_PAD(0x06FC, 0x0314, 1, 0x08F8, 2, MX6DL_UART_RTSDTR_PAD_CTRL)	// (Sylvia) added; Peter edit for 1.6V issue
 #define MX6DL_PAD_SD3_DAT0__CAN2_TXCAN                                         \
 		IOMUX_PAD(0x06FC, 0x0314, 2, 0x0000, 0, NO_PAD_CTRL)
 #define MX6DL_PAD_SD3_DAT0__USBOH3_UH3_DFD_OUT_6                               \

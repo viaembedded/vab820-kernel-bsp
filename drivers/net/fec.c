@@ -1082,9 +1082,10 @@ static int fec_enet_mii_probe(struct net_device *ndev)
 	}
 
 	/* mask with MAC supported features */
-	if (cpu_is_mx6q() || cpu_is_mx6dl())
-		phy_dev->supported &= PHY_GBIT_FEATURES;
-	else
+	if (cpu_is_mx6q() || cpu_is_mx6dl()) {
+		// steven: support SUPPORTED_Pause
+		phy_dev->supported &= PHY_GBIT_FEATURES | SUPPORTED_Pause;
+	} else
 		phy_dev->supported &= PHY_BASIC_FEATURES;
 
 	/* enable phy pause frame for any platform */
@@ -1668,6 +1669,11 @@ fec_restart(struct net_device *dev, int duplex)
 		writel(OPT_FRAME_SIZE | 0x06, fep->hwp + FEC_R_CNTRL);
 		writel(0x0, fep->hwp + FEC_X_CNTRL);
 	}
+
+	// steven: Frame Truncation Length
+	#define FEC_FTRL    0x1b0
+	writel(PKT_MAXBUF_SIZE, fep->hwp + FEC_FTRL);
+
 	fep->full_duplex = duplex;
 
 	/* Set MII speed */

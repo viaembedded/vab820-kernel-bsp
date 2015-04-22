@@ -364,7 +364,8 @@ static int __init imx_sgtl5000_init(void)
 		return -ENOMEM;
 
 	if (machine_is_mx35_3ds() || machine_is_mx6q_sabrelite())
-		imx_sgtl5000_dai[0].codec_name = "sgtl5000.0-000a";
+		// (Sylvia) modified for VAB-820, on which sgtl5000 is linked to I2C3
+		imx_sgtl5000_dai[0].codec_name = "sgtl5000.2-000a"; //"sgtl5000.0-000a"; 
 	else
 		imx_sgtl5000_dai[0].codec_name = "sgtl5000.1-000a";
 
