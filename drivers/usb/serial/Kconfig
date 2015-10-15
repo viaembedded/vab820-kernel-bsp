@@ -710,6 +710,14 @@ config USB_SERIAL_QT2
 	  To compile this driver as a module, choose M here: the
 	  module will be called quatech-serial.
 
+config USB_SERIAL_XR
+        tristate "USB xr_usb_serial_common"
+        help
+          Say Y here if you want to use the xr_usb_serial_common.
+
+          To compile this driver as a module, choose M here: the
+          module will be called xr_usb_serial_common.
+
 config USB_SERIAL_DEBUG
 	tristate "USB Debugging Device"
 	help

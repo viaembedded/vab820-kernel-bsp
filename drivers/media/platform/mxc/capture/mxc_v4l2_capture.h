@@ -40,7 +40,7 @@
 #include <media/v4l2-int-device.h>
 
 
-#define FRAME_NUM 10
+#define FRAME_NUM 30
 #define MXC_SENSOR_NUM 2
 
 enum imx_v4l2_devtype {
@@ -123,6 +123,7 @@ typedef struct _cam_data {
 	struct list_head done_q;
 	struct list_head working_q;
 	int ping_pong_csi;
+        int ping_pong_vdi;
 	spinlock_t queue_int_lock;
 	spinlock_t dqueue_int_lock;
 	struct mxc_v4l_frame frame[FRAME_NUM];
@@ -132,7 +133,11 @@ typedef struct _cam_data {
 	dma_addr_t rot_enc_bufs[2];
 	void *rot_enc_bufs_vaddr[2];
 	int rot_enc_buf_size[2];
-	enum v4l2_buf_type type;
+	dma_addr_t vdi_enc_bufs[3];
+	void *vdi_enc_bufs_vaddr[3];
+	int vdi_enc_buf_size[3];
+        int vdi_enc_first_frame;
+        enum v4l2_buf_type type;
 
 	/* still image capture */
 	wait_queue_head_t still_queue;
@@ -209,6 +214,8 @@ typedef struct _cam_data {
 	u8 mclk_source;
 	bool mclk_on[2];	/* two mclk sources at most now */
 	int current_input;
+        struct workqueue_struct *vdi_wq;
+        struct work_struct vdi_work;
 
 	int local_buf_num;
 

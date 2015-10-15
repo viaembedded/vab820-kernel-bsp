@@ -1,0 +1,606 @@
+/*
+ * Copyright 2012 Freescale Semiconductor, Inc.
+ * Copyright 2011 Linaro Ltd.
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+	aliases {
+		mmc0 = &usdhc4;
+		mmc1 = &usdhc2;
+		mxcfb0 = &mxcfb1;
+		mxcfb1 = &mxcfb2;
+		mxcfb2 = &mxcfb3;
+		mxcfb3 = &mxcfb4;
+	};
+
+	memory {
+		reg = <0x10000000 0x40000000>;
+	};
+
+	hannstar_cabc {
+		compatible = "hannstar,cabc";
+
+		lvds0 {
+			gpios = <&gpio6 15 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	regulators {
+		compatible = "simple-bus";
+
+		reg_3p3v: 3p3v {
+			compatible = "regulator-fixed";
+			regulator-name = "3P3V";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			regulator-always-on;
+		};
+
+		reg_usb_otg_vbus: usb_otg_vbus {
+			compatible = "regulator-fixed";
+			regulator-name = "usb_otg_vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio3 22 0>;
+			enable-active-high;
+		};
+
+		reg_usb_h1_vbus: usb_h1_vbus {
+			compatible = "regulator-fixed";
+			regulator-name = "usb_h1_vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio3 0 1>; /* VAB-820 - low enable*/ 
+
+			/* SDB - high enable
+			gpio = <&gpio1 29 0>;
+			enable-active-high; */
+		};
+	}; 
+
+	/* VAB-820 - copied from imx6q-sabrelite.dts */
+	sound {
+		compatible = "fsl,imx6q-vab820-sgtl5000",
+			     "fsl,imx-audio-sgtl5000";
+		model = "imx6q-vab820-sgtl5000";
+		ssi-controller = <&ssi2>;
+		audio-codec = <&codec>;
+		audio-routing =
+			"MIC_IN", "Mic Jack",
+			"Mic Jack", "Mic Bias",
+			"Headphone Jack", "HP_OUT";
+		mux-int-port = <2>;
+		mux-ext-port = <4>;
+	};
+
+	sound-hdmi {
+		compatible = "fsl,imx6q-audio-hdmi",
+			     "fsl,imx-audio-hdmi";
+		model = "imx-audio-hdmi";
+		hdmi-controller = <&hdmi_audio>;
+	};
+
+	mxcfb1: fb@0 {
+		compatible = "fsl,mxc_sdc_fb";
+		disp_dev = "lcd";
+		interface_pix_fmt = "RGB666";
+		mode_str ="LDB-XGA";
+		default_bpp = <16>;
+		int_clk = <0>;
+		late_init = <0>;
+		status = "disabled";
+	};
+
+	mxcfb2: fb@1 {
+		compatible = "fsl,mxc_sdc_fb";
+		disp_dev = "lcd";
+		interface_pix_fmt = "RGB565";
+		mode_str ="CLAA-WVGA";
+		default_bpp = <16>;
+		int_clk = <0>;
+		late_init = <0>;
+		status = "disabled";
+	};
+
+	mxcfb3: fb@2 {
+		compatible = "fsl,mxc_sdc_fb";
+		disp_dev = "lcd";
+		interface_pix_fmt = "RGB666";
+		mode_str ="LDB-SVGA";
+		default_bpp = <16>;
+		int_clk = <0>;
+		late_init = <0>;
+		status = "disabled";
+	};
+
+	mxcfb4: fb@3 {
+		compatible = "fsl,mxc_sdc_fb";
+		disp_dev = "lcd";
+		interface_pix_fmt = "RGB666";
+		mode_str ="LDB-VGA";
+		default_bpp = <16>;
+		int_clk = <0>;
+		late_init = <0>;
+		status = "disabled";
+	};
+
+	backlight {
+		compatible = "pwm-backlight";
+		pwms = <&pwm2 0 5000000>; /*VAB-820*/  /*SDB - <&pwm1 0 5000000>;*/
+		brightness-levels = <0 4 8 16 32 64 128 255>;
+		default-brightness-level = <7>;
+	};
+
+	v4l2_cap_0 {
+		compatible = "fsl,imx6q-v4l2-capture";
+		ipu_id = <0>;
+		csi_id = <0>;
+		mclk_source = <0>;
+		status = "okay";
+	};
+
+	v4l2_cap_1 {
+		compatible = "fsl,imx6q-v4l2-capture";
+		ipu_id = <0>;
+		csi_id = <1>;
+		mclk_source = <0>;
+		status = "okay";
+	};
+
+	v4l2_out {
+		compatible = "fsl,mxc_v4l2_output";
+		status = "okay";
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		power {
+			power-led-gpio = <&gpio4 5 0>;
+		};
+	};
+
+};
+
+&audmux {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_audmux_4>; /*VAB-820*/  /*SDB - <&pinctrl_audmux_2>;*/
+	status = "okay";
+};
+
+/*VAB-820*/
+#if 0
+&cpu0 { 
+	arm-supply = <&sw1a_reg>;
+	soc-supply = <&sw1c_reg>;
+	pu-supply = <&pu_dummy>; /* use pu_dummy if VDDSOC share with VDDPU */
+};
+#endif
+
+&ecspi1 {
+	fsl,spi-num-chipselects = <1>;
+	cs-gpios = <&gpio3 19 0>; 	 /*VAB-820*/  /*SDB - <&gpio4 9 0>;*/
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi1_1 &pinctrl_ecspi1_cs_1>; /*VAB-820 - copied from imx6qdl-sabreauto.dtsi*/  
+							      /*SDB-<&pinctrl_ecspi1_2>;*/
+	status = "okay";
+
+	flash1_0: m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "sst,sst25vf032b"; /*VAB-820*/  /*SDB - "st,m25p32";*/
+		spi-max-frequency = <20000000>;
+		reg = <0>;
+	};
+
+	flash1_1: m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "winbond,w25q32";
+		spi-max-frequency = <20000000>;
+		reg = <0>; /*Chip-Select number*/
+	};
+
+};
+
+/*VAB-820*/
+#if 1
+&ecspi3 {
+	fsl,spi-num-chipselects = <2>;
+	cs-gpios = <&gpio4 24 0>, <&gpio4 25 0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi3_1 &pinctrl_ecspi3_cs_1 &pinctrl_ecspi3_cs_2>;
+	status = "okay";
+
+	flash3_0: m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "sst,sst25vf032b";
+		spi-max-frequency = <20000000>;
+		reg = <0>; /*Chip-Select number*/
+	};
+
+	flash3_1: m25p80@1 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "sst,sst25vf032b";
+		spi-max-frequency = <20000000>;
+		reg = <1>; /*Chip-Select number*/
+	};
+
+};
+#endif
+
+#if 0
+&fec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet_3>;   /*VAB-820*/  /*SDB - <&pinctrl_enet_1>;*/
+	phy-mode = "rgmii";
+	phy-reset-gpios = <&gpio1 28 0>; /*VAB-820*/
+	status = "okay";
+};
+#endif
+/* VAB-820 : copied from Boundary's SabreLite  */
+&fec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet_4>;
+	phy-mode = "rgmii";
+	status = "okay";
+
+	#address-cells = <0>;
+	#size-cells = <1>;
+
+	phy_int {
+		reg = <0x6>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
+	};
+};
+
+&hdmi_audio {
+	status = "okay";
+};
+
+&hdmi_cec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hdmi_cec_2>;
+	status = "okay";
+};
+
+&hdmi_core {
+	ipu_id = <0>;
+	disp_id = <0>;
+	status = "okay";
+};
+
+&hdmi_video {
+	fsl,phy_reg_vlev = <0x0294>;
+	fsl,phy_reg_cksymtx = <0x800d>;
+	status = "okay";
+};
+
+&i2c1 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c1_2>;
+	status = "okay";
+
+	/* VAB-820 - copied from imx6qdl-sabreauto.dtsi */
+	adv7180: adv7180@21 {
+		compatible = "adv,adv7180";
+		reg = <0x21>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ipu1_4>; /*VAB-820*/  /*AI - <&pinctrl_ipu1_3>;*/
+		clocks = <&clks 201>;
+		clock-names = "csi_mclk";
+		DOVDD-supply = <&reg_3p3v>; /* 3.3v, enabled via 2.8 VGEN6 */
+		AVDD-supply = <&reg_3p3v>;  /* 1.8v */
+		DVDD-supply = <&reg_3p3v>;  /* 1.8v */
+		PVDD-supply = <&reg_3p3v>;  /* 1.8v */
+		pwn-gpios = <&gpio1 16 GPIO_ACTIVE_LOW>; /*VAB-820*/  /*AI - <&max7310_b 2 0>;*/
+		rst-gpios = <&gpio1 17 GPIO_ACTIVE_LOW>; /*VAB-820*/
+		csi_id = <0>;
+		mclk = <24000000>;
+		mclk_source = <0>;
+		cvbs = <1>;
+	};
+
+};
+
+&i2c2 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2_2>;
+	status = "okay";
+
+	hdmi: edid@50 {
+		compatible = "fsl,imx6-hdmi-i2c";
+		reg = <0x50>;
+	};
+};
+
+&i2c3 {
+        clock-frequency = <100000>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_i2c3_2>;
+        status = "okay";
+
+        egalax_ts@04 {
+                compatible = "eeti,egalax_ts";
+                reg = <0x04>;
+                interrupt-parent = <&gpio6>;
+                interrupts = <8 2>;
+                wakeup-gpios = <&gpio6 8 0>;
+        };
+
+	/*VAB-820 - copied from imx6q-sabrelite.dts*/
+	codec: sgtl5000@0a {
+		compatible = "fsl,sgtl5000";
+		reg = <0x0a>;
+		clocks = <&clks 201>;
+		VDDA-supply = <&reg_3p3v>;/*VAB-820*/ /*SBL - <&reg_2p5v>;*/
+		VDDIO-supply = <&reg_3p3v>;
+	};
+};
+
+
+&ldb {
+	ipu_id = <1>;
+	disp_id = <0>;
+	ext_ref = <1>;
+	mode = "sep0";
+	sec_ipu_id = <1>;
+	sec_disp_id = <1>;
+	status = "okay";
+};
+
+&mipi_csi {
+	status = "okay";
+	ipu_id = <0>;
+	csi_id = <1>;
+	v_channel = <0>;
+	lanes = <2>;
+};
+
+&pcie {
+	power-on-gpio = <&gpio1 19 0>; /*VAB-820*/  /*SDB - <&gpio3 19 0>;*/
+	reset-gpio = <&gpio7 12 GPIO_ACTIVE_LOW>;
+	wake-up-gpio = <&gpio5 20 GPIO_ACTIVE_LOW>;
+	disable-gpio = <&gpio4 9 0>;
+	status = "okay";
+};
+
+&pwm2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm2_1>;
+	status = "okay";
+};
+
+&ssi2 {
+	fsl,mode = "i2s-slave";
+	status = "okay";
+};
+
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1_vab820>;
+	status = "okay";
+	fsl,uart-has-rtscts;
+	fsl,dte-mode;
+};
+
+
+&uart2 { 
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2_1>;
+	status = "okay";
+}; 
+
+
+&usbh1 {
+	vbus-supply = <&reg_usb_h1_vbus>;
+	pinctrl-1 = <&pinctrl_usbh1_1>;
+	status = "okay";
+};
+
+&usbotg {
+	vbus-supply = <&reg_usb_otg_vbus>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbotg_2>;
+	disable-over-current;
+	status = "okay";
+};
+
+&usdhc2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc2_2>;  /* VAB-820 */ /*pinctrl-0 = <&pinctrl_usdhc2_1>;*/
+	cd-gpios = <&gpio2 2 0>;
+	/*SDB - wp-gpios = <&gpio2 3 0>;*/
+	no-1-8-v;
+	keep-power-in-suspend;
+	enable-sdio-wakeup;
+	status = "okay";
+};
+
+&usdhc4 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_usdhc4_1>;
+        bus-width = <8>;
+        non-removable;
+        no-1-8-v;
+	keep-power-in-suspend;
+        status = "okay";
+};
+
+&flexcan1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexcan1_vab820>;
+	status = "okay";
+};
+
+&flexcan2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexcan2_1>;
+	status = "okay";
+};
+
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog_1>;
+
+	uart1 {
+		pinctrl_uart1_vab820: uart1grp-2 {
+			fsl,pins = <
+				MX6QDL_PAD_SD3_DAT6__UART1_TX_DATA 0x80000000
+				MX6QDL_PAD_SD3_DAT7__UART1_RX_DATA 0x80000000
+				MX6QDL_PAD_EIM_D20__UART1_CTS_B	0x80000000
+				MX6QDL_PAD_SD3_DAT0__UART1_RTS_B 0x130b0
+				MX6QDL_PAD_EIM_D24__UART1_DTR_B 0x130b0
+				MX6QDL_PAD_EIM_D25__UART1_DSR_B 0x80000000
+				MX6QDL_PAD_EIM_D23__UART1_DCD_B 0x80000000
+				//MX6QDL_PAD_EIM_EB3__UART1_RI_B 0x80000000
+			>;
+		};
+	};
+
+	flexcan1 {
+		pinctrl_flexcan1_vab820: flexcan1grp-3 {
+			fsl,pins = <
+				MX6QDL_PAD_SD3_CMD__FLEXCAN1_TX 0x80000000
+				MX6QDL_PAD_SD3_CLK__FLEXCAN1_RX 0x80000000
+			>;
+		};
+	};
+
+	hog {
+		pinctrl_hog_1: hoggrp-1 {
+			fsl,pins = <
+				MX6QDL_PAD_GPIO_1__GPIO1_IO01   0x80000000
+				MX6QDL_PAD_GPIO_2__GPIO1_IO02   0x80000000
+				MX6QDL_PAD_GPIO_4__GPIO1_IO04	0x80000000
+				MX6QDL_PAD_GPIO_5__GPIO1_IO05	0x80000000
+				MX6QDL_PAD_GPIO_7__GPIO1_IO07	0x80000000
+				MX6QDL_PAD_GPIO_8__GPIO1_IO08	0x80000000
+				MX6QDL_PAD_GPIO_9__GPIO1_IO09	0x80000000
+				MX6QDL_PAD_SD1_DAT0__GPIO1_IO16 0x80000000
+				MX6QDL_PAD_SD1_DAT1__GPIO1_IO17 0x80000000
+				/*MX6QDL_PAD_SD1_DAT2__GPIO1_IO19 0x80000000	/*MX6Q_SABRELITE_PCIE_CSI_PWN*/
+				MX6QDL_PAD_ENET_TX_EN__GPIO1_IO28 0x1b0b0 	/* ethernet phy interrupt - copied from boundary */
+				MX6QDL_PAD_NANDF_D2__GPIO2_IO02 0x80000000
+
+				MX6QDL_PAD_EIM_DA0__GPIO3_IO00  0x80000000
+				/*MX6QDL_PAD_EIM_D19__GPIO3_IO19  0x80000000*/ 	/*defined in &pinctrl_ecspi1_cs_1*/
+				MX6QDL_PAD_EIM_D22__GPIO3_IO22  0x80000000
+				MX6QDL_PAD_EIM_D28__GPIO3_IO28  0x80000000
+				MX6QDL_PAD_GPIO_19__GPIO4_IO05  0x80000000
+				/*MX6QDL_PAD_KEY_ROW1__GPIO4_IO09 0x80000000	/*MX6Q_SABRELITE_PCIE_DIS_B*/
+				/*MX6QDL_PAD_DISP0_DAT3__GPIO4_IO24 0x80000000  /*MX6QDL_PAD_DISP0_DAT3__ECSPI3_SS0 ????*/
+				/*MX6QDL_PAD_DISP0_DAT4__GPIO4_IO25 0x80000000  /*MX6QDL_PAD_DISP0_DAT4__ECSPI3_SS1 ????*/
+
+				/*MX6QDL_PAD_CSI0_DATA_EN__GPIO5_IO20 0x80000000/*MX6Q_SABRELITE_PCIE_WAKE_B*/
+				MX6QDL_PAD_NANDF_ALE__GPIO6_IO08 0x80000000
+
+				MX6QDL_PAD_NANDF_CS2__GPIO6_IO15 0x80000000
+				MX6QDL_PAD_GPIO_16__GPIO7_IO11   0x80000000
+				/*MX6QDL_PAD_GPIO_17__GPIO7_IO12  0x80000000	/*MX6Q_SABRELITE_PCIE_RST_B*/
+				MX6QDL_PAD_GPIO_18__GPIO7_IO13 0x80000000
+
+				MX6QDL_PAD_GPIO_0__CCM_CLKO1 0x000b0 		/* SGTL5000 sys_mclk : copied from boundary */
+			>;
+		};
+	};
+
+	ecspi3 {
+		pinctrl_ecspi3_cs_1: ecspi3_cs_grp-1 {
+			fsl,pins = <
+				MX6QDL_PAD_DISP0_DAT3__GPIO4_IO24 0x80000000
+			>;
+		};
+
+		pinctrl_ecspi3_cs_2: ecspi3_cs_grp-2 {
+			fsl,pins = <
+				MX6QDL_PAD_DISP0_DAT4__GPIO4_IO25 0x80000000
+			>;
+		};
+	};
+
+	audmux {
+		/* VAB-820 */
+		pinctrl_audmux_4: audmux-4 {
+			fsl,pins = <
+				MX6QDL_PAD_DISP0_DAT20__AUD4_TXC  0x130b0
+				MX6QDL_PAD_DISP0_DAT21__AUD4_TXD  0x110b0
+				MX6QDL_PAD_DISP0_DAT22__AUD4_TXFS 0x130b0
+				MX6QDL_PAD_DISP0_DAT23__AUD4_RXD  0x130b0
+			>;
+		};
+	};
+
+	enet {
+		/* VAB-820 - remove ENET_TX_EN pin, set it as GPIO instead */
+		pinctrl_enet_4: enetgrp-4 {
+			fsl,pins = <
+				MX6QDL_PAD_ENET_MDIO__ENET_MDIO       0x1b0b0
+				MX6QDL_PAD_ENET_MDC__ENET_MDC         0x1b0b0
+				MX6QDL_PAD_RGMII_TXC__RGMII_TXC       0x1b0b0
+				MX6QDL_PAD_RGMII_TD0__RGMII_TD0       0x1b0b0
+				MX6QDL_PAD_RGMII_TD1__RGMII_TD1       0x1b0b0
+				MX6QDL_PAD_RGMII_TD2__RGMII_TD2       0x1b0b0
+				MX6QDL_PAD_RGMII_TD3__RGMII_TD3       0x1b0b0
+				MX6QDL_PAD_RGMII_TX_CTL__RGMII_TX_CTL 0x1b0b0
+				MX6QDL_PAD_ENET_REF_CLK__ENET_TX_CLK  0x1b0b0
+				MX6QDL_PAD_RGMII_RXC__RGMII_RXC       0x1b0b0
+				MX6QDL_PAD_RGMII_RD0__RGMII_RD0       0x1b0b0
+				MX6QDL_PAD_RGMII_RD1__RGMII_RD1       0x1b0b0
+				MX6QDL_PAD_RGMII_RD2__RGMII_RD2       0x1b0b0
+				MX6QDL_PAD_RGMII_RD3__RGMII_RD3       0x1b0b0
+				MX6QDL_PAD_RGMII_RX_CTL__RGMII_RX_CTL 0x1b0b0
+			>;
+		};
+	};
+
+	ipu1 {
+		pinctrl_ipu1_4: ipu1grp-4 { /* VAB-820 - parallel camera, remove CSI0_DATA_EN */
+			fsl,pins = <
+				MX6QDL_PAD_CSI0_DAT12__IPU1_CSI0_DATA12    0x80000000
+				MX6QDL_PAD_CSI0_DAT13__IPU1_CSI0_DATA13    0x80000000
+				MX6QDL_PAD_CSI0_DAT14__IPU1_CSI0_DATA14    0x80000000
+				MX6QDL_PAD_CSI0_DAT15__IPU1_CSI0_DATA15    0x80000000
+				MX6QDL_PAD_CSI0_DAT16__IPU1_CSI0_DATA16    0x80000000
+				MX6QDL_PAD_CSI0_DAT17__IPU1_CSI0_DATA17    0x80000000
+				MX6QDL_PAD_CSI0_DAT18__IPU1_CSI0_DATA18    0x80000000
+				MX6QDL_PAD_CSI0_DAT19__IPU1_CSI0_DATA19    0x80000000
+				MX6QDL_PAD_CSI0_PIXCLK__IPU1_CSI0_PIXCLK   0x80000000
+				MX6QDL_PAD_CSI0_MCLK__IPU1_CSI0_HSYNC      0x80000000
+				MX6QDL_PAD_CSI0_VSYNC__IPU1_CSI0_VSYNC     0x80000000
+			>;
+		};
+	};
+
+	pwm2 {
+		pinctrl_pwm2_1: pwm2grp-1 {
+			fsl,pins = <
+				MX6QDL_PAD_DISP0_DAT9__PWM2_OUT 0x1b0b1
+			>;
+		};
+	};
+
+
+	usbh1 {
+		pinctrl_usbh1_1: usbh1grp-1 {
+			fsl,pins = <
+				MX6QDL_PAD_EIM_D30__USB_H1_OC      0x80000000
+			>;
+		};
+	};
+};
