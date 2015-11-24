@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #define XR_SET_MAP_XR2280X              5
 #define XR_GET_MAP_XR2280X              5
 
@@ -34,7 +34,7 @@ int xr_usb_serial_set_reg(struct xr_usb_serial *xr_usb_serial,int regnum, int va
 	dev_dbg(&xr_usb_serial->control->dev, "%s Channel:%d 0x%02x = 0x%02x\n", __func__,channel,regnum, value);
 	if((xr_usb_serial->DeviceProduct&0xfff0) == 0x1400)
 	{
-	    int XR2280xaddr = XR2280x_FUNC_MGR_OFFSET + regnum; 
+	    int XR2280xaddr = XR2280x_FUNC_MGR_OFFSET + regnum;
 		result = usb_control_msg(xr_usb_serial->dev,                     /* usb device */
 	                             usb_sndctrlpipe(xr_usb_serial->dev, 0), /* endpoint pipe */
 	                             XR_SET_MAP_XR2280X,                      /* request */
@@ -78,9 +78,9 @@ int xr_usb_serial_set_reg(struct xr_usb_serial *xr_usb_serial,int regnum, int va
 	else if((xr_usb_serial->DeviceProduct == 0x1420)||
 		   (xr_usb_serial->DeviceProduct == 0x1422)||
 		   (xr_usb_serial->DeviceProduct == 0x1424))
-		
+
 	{
-	   
+
 		channel = (xr_usb_serial->channel - 4)*2;
         result = usb_control_msg(xr_usb_serial->dev,                     /* usb device */
                                  usb_sndctrlpipe(xr_usb_serial->dev, 0), /* endpoint pipe */
@@ -99,13 +99,13 @@ int xr_usb_serial_set_reg(struct xr_usb_serial *xr_usb_serial,int regnum, int va
 	if(result < 0)
 		dev_dbg(&xr_usb_serial->control->dev, "%s Error:%d\n", __func__,result);
     return result;
-	
-       
+
+
 }
 int xr_usb_serial_set_reg_ext(struct xr_usb_serial *xr_usb_serial,int channel,int regnum, int value)
 {
 	int result;
-	int XR2280xaddr = XR2280x_FUNC_MGR_OFFSET + regnum; 
+	int XR2280xaddr = XR2280x_FUNC_MGR_OFFSET + regnum;
 	dev_dbg(&xr_usb_serial->control->dev, "%s channel:%d 0x%02x = 0x%02x\n", __func__,channel,regnum, value);
 	if((xr_usb_serial->DeviceProduct&0xfff0) == 0x1400)
 	{
@@ -167,18 +167,18 @@ int xr_usb_serial_set_reg_ext(struct xr_usb_serial *xr_usb_serial,int channel,in
 	if(result < 0)
 		dev_dbg(&xr_usb_serial->control->dev, "%s Error:%d\n", __func__,result);
     return result;
-	
-       
+
+
 }
 
 int xr_usb_serial_get_reg(struct xr_usb_serial *xr_usb_serial,int regnum, short *value)
 {
 	int result;
 	int channel = 0;
-	
+
 	if((xr_usb_serial->DeviceProduct&0xfff0) == 0x1400)
 	{
-		int XR2280xaddr = XR2280x_FUNC_MGR_OFFSET + regnum; 
+		int XR2280xaddr = XR2280x_FUNC_MGR_OFFSET + regnum;
     	result = usb_control_msg(xr_usb_serial->dev,                     /* usb device */
                                  usb_rcvctrlpipe(xr_usb_serial->dev, 0), /* endpoint pipe */
                                  XR_GET_MAP_XR2280X,                     /* request */
@@ -188,9 +188,9 @@ int xr_usb_serial_get_reg(struct xr_usb_serial *xr_usb_serial,int regnum, short 
                                  value,                           /* data */
                                  2,                               /* size */
                                  5000);                           /* timeout */
-		
-				
-		
+
+
+
 	}
 	else if((xr_usb_serial->DeviceProduct == 0x1410) ||
 		    (xr_usb_serial->DeviceProduct == 0x1412) ||
@@ -208,7 +208,7 @@ int xr_usb_serial_get_reg(struct xr_usb_serial *xr_usb_serial,int regnum, short 
                                  1,                               /* size */
                                  5000);                           /* timeout */
 	}
-	else if(xr_usb_serial->DeviceProduct == 0x1411) 
+	else if(xr_usb_serial->DeviceProduct == 0x1411)
 	{
 	     result = usb_control_msg(xr_usb_serial->dev,                     /* usb device */
                                  usb_rcvctrlpipe(xr_usb_serial->dev, 0), /* endpoint pipe */
@@ -223,7 +223,7 @@ int xr_usb_serial_get_reg(struct xr_usb_serial *xr_usb_serial,int regnum, short 
 	else if((xr_usb_serial->DeviceProduct == 0x1420)||
 		    (xr_usb_serial->DeviceProduct == 0x1422)||
 		    (xr_usb_serial->DeviceProduct == 0x1424))
-		   
+
 	{
 	  channel = (xr_usb_serial->channel -4)*2;
       result = usb_control_msg(xr_usb_serial->dev,                     /* usb device */
@@ -240,12 +240,12 @@ int xr_usb_serial_get_reg(struct xr_usb_serial *xr_usb_serial,int regnum, short 
 	{
 	    result = -1;
 	}
-	
+
 	if(result < 0)
 		dev_dbg(&xr_usb_serial->control->dev, "%s channel:%d Reg 0x%x Error:%d\n", __func__,channel,regnum,result);
 	else
 	    dev_dbg(&xr_usb_serial->control->dev, "%s channel:%d 0x%x = 0x%04x\n", __func__,channel,regnum, *value);
-	
+
 	return result;
 
 }
@@ -254,10 +254,10 @@ int xr_usb_serial_get_reg(struct xr_usb_serial *xr_usb_serial,int regnum, short 
 int xr_usb_serial_get_reg_ext(struct xr_usb_serial *xr_usb_serial,int channel,int regnum, short *value)
 {
 	int result;
-	int XR2280xaddr = XR2280x_FUNC_MGR_OFFSET + regnum; 
+	int XR2280xaddr = XR2280x_FUNC_MGR_OFFSET + regnum;
 	if((xr_usb_serial->DeviceProduct&0xfff0) == 0x1400)
 	{
-		
+
     	result = usb_control_msg(xr_usb_serial->dev,                     /* usb device */
                                  usb_rcvctrlpipe(xr_usb_serial->dev, 0), /* endpoint pipe */
                                  XR_GET_MAP_XR2280X,                     /* request */
@@ -267,9 +267,9 @@ int xr_usb_serial_get_reg_ext(struct xr_usb_serial *xr_usb_serial,int channel,in
                                  value,                           /* data */
                                  2,                               /* size */
                                  5000);                           /* timeout */
-		
-				
-		
+
+
+
 	}
 	else if((xr_usb_serial->DeviceProduct == 0x1410) ||
 		    (xr_usb_serial->DeviceProduct == 0x1412) ||
@@ -286,9 +286,9 @@ int xr_usb_serial_get_reg_ext(struct xr_usb_serial *xr_usb_serial,int channel,in
                                  1,                               /* size */
                                  5000);                           /* timeout */
 	   dev_dbg(&xr_usb_serial->control->dev, "xr_usb_serial_get_reg_ext reg:%x\n",reg_value);
-	   *value = reg_value; 
+	   *value = reg_value;
 	}
-	else if(xr_usb_serial->DeviceProduct == 0x1411) 
+	else if(xr_usb_serial->DeviceProduct == 0x1411)
 	{
 	     result = usb_control_msg(xr_usb_serial->dev,                     /* usb device */
                                  usb_rcvctrlpipe(xr_usb_serial->dev, 0), /* endpoint pipe */
@@ -318,12 +318,12 @@ int xr_usb_serial_get_reg_ext(struct xr_usb_serial *xr_usb_serial,int channel,in
 	{
 	    result = -1;
 	}
-	
+
 	if(result < 0)
 		dev_dbg(&xr_usb_serial->control->dev, "%s Error:%d\n", __func__,result);
 	else
 	    dev_dbg(&xr_usb_serial->control->dev, "%s channel:%d 0x%x = 0x%04x\n", __func__,channel,regnum, *value);
-	
+
 	return result;
 
 }
@@ -393,7 +393,7 @@ static int xr21v141x_set_baud_rate(struct xr_usb_serial *xr_usb_serial, unsigned
 	xr_usb_serial_set_reg(xr_usb_serial,UART_TX_CLOCK_MASK_1, (tx_mask >>  8) & 0xff);
 	xr_usb_serial_set_reg(xr_usb_serial,UART_RX_CLOCK_MASK_0, (rx_mask >>  0) & 0xff);
 	xr_usb_serial_set_reg(xr_usb_serial,UART_RX_CLOCK_MASK_1, (rx_mask >>  8) & 0xff);
-	
+
 	return 0;
 }
 /* devices aren't required to support these requests.
@@ -402,26 +402,26 @@ static int xr21v141x_set_baud_rate(struct xr_usb_serial *xr_usb_serial, unsigned
 int xr_usb_serial_set_control(struct xr_usb_serial *xr_usb_serial, unsigned int control)
 {
     int ret = 0;
-    
+
 	if((xr_usb_serial->DeviceProduct == 0x1410) ||
-		   (xr_usb_serial->DeviceProduct == 0x1412) || 
-		   (xr_usb_serial->DeviceProduct == 0x1414)) 
+		   (xr_usb_serial->DeviceProduct == 0x1412) ||
+		   (xr_usb_serial->DeviceProduct == 0x1414))
 	{
-		if (control & XR_USB_SERIAL_CTRL_DTR) 
+		if (control & XR_USB_SERIAL_CTRL_DTR)
 		   xr_usb_serial_set_reg(xr_usb_serial,xr_usb_serial->reg_map.uart_gpio_clr_addr, 0x08);
 		else
 		   xr_usb_serial_set_reg(xr_usb_serial,xr_usb_serial->reg_map.uart_gpio_set_addr, 0x08);
 
-		if (control & XR_USB_SERIAL_CTRL_RTS) 
+		if (control & XR_USB_SERIAL_CTRL_RTS)
 		   xr_usb_serial_set_reg(xr_usb_serial,xr_usb_serial->reg_map.uart_gpio_clr_addr, 0x20);
 		else
 		   xr_usb_serial_set_reg(xr_usb_serial,xr_usb_serial->reg_map.uart_gpio_set_addr, 0x20);
 	}
-	else 
+	else
 	{
 	   ret = xr_usb_serial_ctrl_msg(xr_usb_serial, USB_CDC_REQ_SET_CONTROL_LINE_STATE, control, NULL, 0);
 	}
-	
+
 	return ret;
 }
 
@@ -432,8 +432,8 @@ int xr_usb_serial_set_line(struct xr_usb_serial *xr_usb_serial, struct usb_cdc_l
 	 unsigned int format_parity;
 	 unsigned int format_stop;
 	 if((xr_usb_serial->DeviceProduct == 0x1410) ||
-		(xr_usb_serial->DeviceProduct == 0x1412) || 
-		(xr_usb_serial->DeviceProduct == 0x1414)) 
+		(xr_usb_serial->DeviceProduct == 0x1412) ||
+		(xr_usb_serial->DeviceProduct == 0x1414))
 	 {
 		xr21v141x_set_baud_rate(xr_usb_serial,line->dwDTERate);
 		format_size = line->bDataBits;
@@ -442,26 +442,26 @@ int xr_usb_serial_set_line(struct xr_usb_serial *xr_usb_serial, struct usb_cdc_l
 		xr_usb_serial_set_reg(xr_usb_serial,
 			                  xr_usb_serial->reg_map.uart_format_addr,
 			                  (format_size << 0) | (format_parity << 4) | (format_stop << 7) );
-		
+
 	 }
-	 else 
+	 else
 	 {
 	   ret = xr_usb_serial_ctrl_msg(xr_usb_serial, USB_CDC_REQ_SET_LINE_CODING, 0, line, sizeof *(line));
 	 }
 	 return ret;
  }
- int xr_usb_serial_set_flow_mode(struct xr_usb_serial *xr_usb_serial, 
+ int xr_usb_serial_set_flow_mode(struct xr_usb_serial *xr_usb_serial,
  	                                     struct tty_struct *tty, unsigned int cflag)
  {
 	unsigned int flow;
 	unsigned int gpio_mode;
-	
+
 	if (cflag & CRTSCTS)
 	{
 	    dev_dbg(&xr_usb_serial->control->dev, "xr_usb_serial_set_flow_mode:hardware\n");
 	    flow      = UART_FLOW_MODE_HW | UART_FLOW_HALF_DUPLEX;
 	    gpio_mode = 0x0b;// UART_GPIO_MODE_SEL_RTS_CTS;
-	} 
+	}
 	else if (I_IXOFF(tty) || I_IXON(tty))
 	{
 	    unsigned char   start_char = START_CHAR(tty);
@@ -482,10 +482,10 @@ int xr_usb_serial_set_line(struct xr_usb_serial *xr_usb_serial, struct usb_cdc_l
     xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_flow_addr, flow);
     xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_mode_addr, gpio_mode);
 	return 0;
-	 
+
 
  }
- 
+
 int xr_usb_serial_send_break(struct xr_usb_serial *xr_usb_serial, int state)
 {
 	int ret = 0;
@@ -498,7 +498,7 @@ int xr_usb_serial_send_break(struct xr_usb_serial *xr_usb_serial, int state)
 	  else
 	  	 ret = xr_usb_serial_set_reg(xr_usb_serial,xr_usb_serial->reg_map.tx_break_addr,0);
 	}
-	else 
+	else
 	{
 	  ret = xr_usb_serial_ctrl_msg(xr_usb_serial, USB_CDC_REQ_SEND_BREAK, state, NULL, 0);
 	}
@@ -522,11 +522,11 @@ int xr_usb_serial_enable(struct xr_usb_serial *xr_usb_serial)
 	  ret = xr_usb_serial_set_reg(xr_usb_serial,xr_usb_serial->reg_map.uart_enable_addr,UART_ENABLE_TX | UART_ENABLE_RX);
 	  ret = xr_usb_serial_set_reg_ext(xr_usb_serial,URM_REG_BLOCK,URM_ENABLE_BASE + channel,URM_ENABLE_0_TX | URM_ENABLE_0_RX);
 	}
-	else 
+	else
 	{
 	  ret = xr_usb_serial_set_reg(xr_usb_serial,xr_usb_serial->reg_map.uart_enable_addr,UART_ENABLE_TX | UART_ENABLE_RX);
 	}
-	
+
 	return ret;
 }
 int xr_usb_serial_disable(struct xr_usb_serial *xr_usb_serial)
@@ -540,7 +540,7 @@ int xr_usb_serial_disable(struct xr_usb_serial *xr_usb_serial)
 	{
 	  ret = xr_usb_serial_set_reg_ext(xr_usb_serial,URM_REG_BLOCK,URM_ENABLE_BASE + channel,URM_ENABLE_0_TX);
 	}
-		
+
 	return ret;
 }
 int xr_usb_serial_set_loopback(struct xr_usb_serial *xr_usb_serial, int channel)
@@ -562,7 +562,7 @@ static int xr_usb_serial_tiocmget(struct xr_usb_serial *xr_usb_serial)
 		result = xr_usb_serial_get_reg(xr_usb_serial,xr_usb_serial->reg_map.uart_gpio_status_addr, &data);
 		dev_dbg(&xr_usb_serial->control->dev, "xr_usb_serial_tiocmget uart_gpio_status_addr:0x%04x\n",data);
 		if (result)
-			return ((data & 0x8) ? 0: TIOCM_DTR) | ((data & 0x20) ? 0:TIOCM_RTS ) | ((data & 0x4) ? 0:TIOCM_DSR) | ((data & 0x1) ? 0 : TIOCM_RI) | ((data & 0x2) ? 0:TIOCM_CD) | ((data & 0x10) ? 0 : TIOCM_CTS); 
+			return ((data & 0x8) ? 0: TIOCM_DTR) | ((data & 0x20) ? 0:TIOCM_RTS ) | ((data & 0x4) ? 0:TIOCM_DSR) | ((data & 0x1) ? 0 : TIOCM_RI) | ((data & 0x2) ? 0:TIOCM_CD) | ((data & 0x10) ? 0 : TIOCM_CTS);
 		else
 			return -EFAULT;
 }
@@ -572,25 +572,25 @@ static int xr_usb_serial_tiocmset(struct xr_usb_serial *xr_usb_serial,
 
 {
         unsigned int newctrl = 0;
-        newctrl = xr_usb_serial->ctrlout; 
-		
+        newctrl = xr_usb_serial->ctrlout;
+
         set = (set & TIOCM_DTR ? XR_USB_SERIAL_CTRL_DTR : 0) | (set & TIOCM_RTS ? XR_USB_SERIAL_CTRL_RTS : 0);
-		
+
         clear = (clear & TIOCM_DTR ? XR_USB_SERIAL_CTRL_DTR : 0) | (clear & TIOCM_RTS ? XR_USB_SERIAL_CTRL_RTS : 0);
-       
+
 	    newctrl = (newctrl & ~clear) | set;
-		
+
 		if (xr_usb_serial->ctrlout == newctrl)
                 return 0;
-		
+
 		xr_usb_serial->ctrlout = newctrl;
-		
-		if (newctrl & XR_USB_SERIAL_CTRL_DTR) 
+
+		if (newctrl & XR_USB_SERIAL_CTRL_DTR)
 			xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_clr_addr, 0x08);
 		else
 			xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_set_addr, 0x08);
 
-		if (newctrl & XR_USB_SERIAL_CTRL_RTS) 
+		if (newctrl & XR_USB_SERIAL_CTRL_RTS)
 			xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_clr_addr, 0x20);
 		else
 			xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_set_addr, 0x20);
@@ -673,7 +673,7 @@ int xr_usb_serial_pre_setup(struct xr_usb_serial *xr_usb_serial)
 {
 	int ret = 0;
 int a1 = 0;
-int a2 = 0;	
+int a2 = 0;
 	init_xr21b140x_reg_map();
 	init_xr21b1411_reg_map();
 	init_xr21v141x_reg_map();
@@ -681,7 +681,7 @@ int a2 = 0;
 	if((xr_usb_serial->DeviceProduct&0xfff0) == 0x1400)
 	{
 	  memcpy(&(xr_usb_serial->reg_map),&xr21b140x_reg_map,sizeof(struct reg_addr_map));
-	 
+
 	}
 	else if(xr_usb_serial->DeviceProduct == 0x1411)
 	{
@@ -706,18 +706,15 @@ int a2 = 0;
 	if(xr_usb_serial->reg_map.uart_custom_driver)
 	   xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_custom_driver, 1);
 
-	xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_mode_addr, 0x0b);//hobart 0X0B 
-	xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_dir_addr, 0x28);  
-    //xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_set_addr, UART_GPIO_SET_DTR | UART_GPIO_SET_RTS); 
-   xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_flow_addr,  UART_FLOW_HALF_DUPLEX);//hobart 
-printk("hobart\n");	
-//	xr_usb_serial_get_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_dir_addr, &a1);  
-//    xr_usb_serial_get_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_flow_addr, &a2);//hobart 
+	xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_mode_addr, 0x0b);//hobart 0X0B
+	xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_dir_addr, 0x28);
+    //xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_set_addr, UART_GPIO_SET_DTR | UART_GPIO_SET_RTS);
+   xr_usb_serial_set_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_flow_addr,  UART_FLOW_HALF_DUPLEX);//hobart
+printk("hobart\n");
+//	xr_usb_serial_get_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_gpio_dir_addr, &a1);
+//    xr_usb_serial_get_reg(xr_usb_serial, xr_usb_serial->reg_map.uart_flow_addr, &a2);//hobart
 //printk("hobartxr_usb_serial->reg_map.uart_gpio_dir_addr = %d\n",a1);
 //dev_err(NULL,"hobartxr_usb_serial->reg_map.uart_flow_addr = %d\n",a2);
     return ret;
-   
+
 }
-
-	
-

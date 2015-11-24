@@ -215,20 +215,22 @@ static int imx6q_pcie_abort_handler(unsigned long addr,
 	return 0;
 }
 
+/* steven: */
 static int imx6_pcie_deassert_core_reset(struct pcie_port *pp)
 {
 	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pp);
 	int ret;
 
 	if (gpio_is_valid(imx6_pcie->power_on_gpio))
-		gpio_set_value(imx6_pcie->power_on_gpio, 1);
+		gpio_set_value_cansleep(imx6_pcie->power_on_gpio, 1);
 
-	regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR1,
-			IMX6Q_GPR1_PCIE_TEST_PD, 0 << 18);
-	regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR1,
-			IMX6Q_GPR1_PCIE_REF_CLK_EN, 1 << 16);
 	request_bus_freq(BUS_FREQ_HIGH);
 
+	/* Those bits are not used anymore on imx6sx */
+	regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR1,
+			IMX6Q_GPR1_PCIE_TEST_PD, 0 << 18);
+
+	/* sata_ref is not used by pcie on imx6sx */
 	ret = clk_prepare_enable(imx6_pcie->sata_ref_100m);
 	if (ret) {
 		dev_err(pp->dev, "unable to enable sata_ref_100m\n");
@@ -256,13 +258,22 @@ static int imx6_pcie_deassert_core_reset(struct pcie_port *pp)
 		goto err_pcie_axi;
 	}
 
+	/*
+	 * This bit is not used anymore on imx6sx.
+	 * wailt for the pcie clks are stable.
+	 * ~4us is requried, let it to be 10us here.
+	 */
+	udelay(10);
+	regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR1,
+			IMX6Q_GPR1_PCIE_REF_CLK_EN, 1 << 16);
+
 	/* allow the clocks to stabilize */
-	usleep_range(200, 500);
+	udelay(200);
 
 	if (gpio_is_valid(imx6_pcie->reset_gpio)) {
-		gpio_set_value(imx6_pcie->reset_gpio, 0);
-		msleep(100);
-		gpio_set_value(imx6_pcie->reset_gpio, 1);
+		gpio_set_value_cansleep(imx6_pcie->reset_gpio, 0);
+		mdelay(1);
+		gpio_set_value_cansleep(imx6_pcie->reset_gpio, 1);
 	}
 
 	return 0;
@@ -278,6 +289,7 @@ err_sata_ref:
 	return ret;
 
 }
+
 
 static void imx6_pcie_init_phy(struct pcie_port *pp)
 {
